@@ -3,8 +3,8 @@
  * @Author         : Aiyangsky
  * @Date           : 2022-08-08 12:03:31
  * @LastEditors    : Aiyangsky
- * @LastEditTime   : 2022-08-11 11:21:32
- * @FilePath       : \Parameters\Parameters.h
+ * @LastEditTime   : 2022-08-11 13:24:51
+ * @FilePath       : \SparrowSkyFlightControl\SRC\moduldes\Parameters\src\Parameters.h
  */
 
 #ifndef _PARAMETERS_H
@@ -91,6 +91,7 @@ extern "C"
     void *Parameters_Creat(PARAMETERS_CB_T *moudule, char *name, PARAMETERS_TYPE_T type, void *default_value);
     void *Parameters_Chanege(PARAMETERS_CB_T *moudule, char *name, void *value);
     bool Parameters_Del(PARAMETERS_CB_T *moudule, char *name);
+    void Parameters_Get_name(PARAMETERS_CB_T *moudule, unsigned short index, char *name);
 #ifdef __cplusplus
 }
 #endif //__cplusplus
