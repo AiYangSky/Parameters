@@ -3,7 +3,7 @@
  * @Author         : Aiyangsky
  * @Date           : 2022-08-08 12:03:31
  * @LastEditors    : Aiyangsky
- * @LastEditTime   : 2022-08-11 11:10:37
+ * @LastEditTime   : 2022-08-11 11:21:32
  * @FilePath       : \Parameters\Parameters.h
  */
 
@@ -91,7 +91,6 @@ extern "C"
     void *Parameters_Creat(PARAMETERS_CB_T *moudule, char *name, PARAMETERS_TYPE_T type, void *default_value);
     void *Parameters_Chanege(PARAMETERS_CB_T *moudule, char *name, void *value);
     bool Parameters_Del(PARAMETERS_CB_T *moudule, char *name);
-    bool Parameters_Load_value(void *dst, void *src, PARAMETERS_TYPE_T type);
 #ifdef __cplusplus
 }
 #endif //__cplusplus

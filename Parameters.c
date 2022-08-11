@@ -3,7 +3,7 @@
  * @Author         : Aiyangsky
  * @Date           : 2022-08-08 12:10:45
  * @LastEditors    : Aiyangsky
- * @LastEditTime   : 2022-08-11 11:11:24
+ * @LastEditTime   : 2022-08-11 12:03:42
  * @FilePath       : \Parameters\Parameters.c
  */
 
@@ -51,7 +51,7 @@ static bool Parameters_Cell_SYNC(PARAMETERS_CB_T *moudule, unsigned short index,
     // Address out of bounds checking
     if ((index + 1) * sizeof(PARAMETERS_CELL_T) > moudule->block_size)
     {
-        printf("Parameters 0X%d index out!error!", moudule);
+        printf("Parameters 0X%d index out!error!\n", moudule);
         status = false;
     }
     else
@@ -71,7 +71,7 @@ static bool Parameters_Cell_SYNC(PARAMETERS_CB_T *moudule, unsigned short index,
         }
         if (max_retry == 0)
         {
-            printf("Parameters 0X%d SYNC cell:%d failed! type %d", moudule, index, operate);
+            printf("Parameters 0X%d SYNC cell:%d failed! type %d\n", moudule, index, operate);
             status = false;
         }
     }
@@ -119,7 +119,7 @@ static bool Parameters_Info_SYNC(PARAMETERS_CB_T *moudule, unsigned char operate
     }
     if (max_retry == 0)
     {
-        printf("Parameters 0X%d SYNC info failed! type :%d", moudule, operate);
+        printf("Parameters 0X%d SYNC info failed! type :%d\n", moudule, operate);
         status = false;
     }
 }
@@ -140,7 +140,7 @@ static bool Parameters_Search(PARAMETERS_CB_T *moudule, char *name, unsigned sho
 
     *index = 0;
     temp[16] = '\0';
-    while (((*index) + 1) * sizeof(PARAMETERS_CELL_T) > moudule->block_size)
+    while (((*index) + 1) * sizeof(PARAMETERS_CELL_T) < moudule->block_size)
     {
         memcpy(temp, search, 16);
 
@@ -164,7 +164,7 @@ static bool Parameters_Search(PARAMETERS_CB_T *moudule, char *name, unsigned sho
  * @return      {*}                             success or fail
  * @note       :
  */
-bool Parameters_Load_value(void *dst, void *src, PARAMETERS_TYPE_T type)
+static bool Parameters_Load_value(void *dst, void *src, PARAMETERS_TYPE_T type)
 {
     bool status = true;
     switch (type)
@@ -267,7 +267,7 @@ bool Parameters_Init(PARAMETERS_CB_T *moudule, char *table_tag, unsigned char *R
         if (!moudule->checkout(moudule->block_start, index * sizeof(PARAMETERS_CELL_T)) ==
             moudule->table_info.check_value)
         {
-            printf("Parameters 0X%d checkout error!", moudule);
+            printf("Parameters 0X%d checkout error!\n", moudule);
             status = false;
         }
     }
@@ -301,7 +301,7 @@ void *Parameters_Creat(PARAMETERS_CB_T *moudule, char *name, PARAMETERS_TYPE_T t
 
             if (!Parameters_Load_value(cell->data, default_value, type))
             {
-                printf("Parameters %s type error", name);
+                printf("Parameters %s type error\n", name);
             }
             else
             {
@@ -315,7 +315,7 @@ void *Parameters_Creat(PARAMETERS_CB_T *moudule, char *name, PARAMETERS_TYPE_T t
     }
     else
     {
-        printf("Parameters 0X%d without space");
+        printf("Parameters 0X%d without space\n",moudule);
     }
 
     return ret;
@@ -343,7 +343,7 @@ void *Parameters_Chanege(PARAMETERS_CB_T *moudule, char *name, void *value)
             ret = cell->data;
             if (!Parameters_Load_value(cell->data, value, cell->type))
             {
-                printf("Parameters %s type error", name);
+                printf("Parameters %s type error\n", name);
             }
             else
             {
