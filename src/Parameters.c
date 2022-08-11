@@ -3,7 +3,7 @@
  * @Author         : Aiyangsky
  * @Date           : 2022-08-08 12:10:45
  * @LastEditors    : Aiyangsky
- * @LastEditTime   : 2022-08-11 13:00:20
+ * @LastEditTime   : 2022-08-11 13:21:38
  * @FilePath       : \SparrowSkyFlightControl\SRC\moduldes\Parameters\src\Parameters.c
  */
 
@@ -267,7 +267,7 @@ bool Parameters_Init(PARAMETERS_CB_T *moudule, char *table_tag, unsigned char *R
     {
         // checkout
         if (!(moudule->checkout(moudule->block_start, index * sizeof(PARAMETERS_CELL_T)) ==
-            moudule->table_info.check_value))
+              moudule->table_info.check_value))
         {
             printf("Parameters 0X%x checkout error!\n", (uintptr_t)moudule);
             status = false;
@@ -317,7 +317,7 @@ void *Parameters_Creat(PARAMETERS_CB_T *moudule, char *name, PARAMETERS_TYPE_T t
     }
     else
     {
-        printf("Parameters 0X%x without space\n",(uintptr_t)moudule);
+        printf("Parameters 0X%x without space\n", (uintptr_t)moudule);
     }
 
     return ret;
@@ -402,4 +402,21 @@ bool Parameters_Del(PARAMETERS_CB_T *moudule, char *name)
         }
     }
     return status;
+}
+
+/**
+ * @description:                                Get the identifier of the parameter based on the index
+ * @param       {PARAMETERS_CB_T} *moudule      Pointer to the parameter management modules
+ * @param       {unsigned short} index          index
+ * @param       {char} *name                    identifier of the parameter
+ * @return      {*}
+ * @note       :
+ */
+void Parameters_Get_name(PARAMETERS_CB_T *moudule, unsigned short index, char *name)
+{
+    PARAMETERS_CELL_T *cell = NULL;
+
+    cell = (PARAMETERS_CELL_T *)(moudule->block_start + index * sizeof(PARAMETERS_CELL_T));
+
+    strcpy(name, cell->name);
 }
