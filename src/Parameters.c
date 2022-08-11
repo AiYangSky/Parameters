@@ -3,14 +3,15 @@
  * @Author         : Aiyangsky
  * @Date           : 2022-08-08 12:10:45
  * @LastEditors    : Aiyangsky
- * @LastEditTime   : 2022-08-11 12:03:42
- * @FilePath       : \Parameters\Parameters.c
+ * @LastEditTime   : 2022-08-11 13:00:20
+ * @FilePath       : \SparrowSkyFlightControl\SRC\moduldes\Parameters\src\Parameters.c
  */
 
 #include "Parameters.h"
 
 #include <string.h>
 #include <stdio.h>
+#include <stdint.h>
 
 #pragma pack(1)
 typedef struct
@@ -51,7 +52,7 @@ static bool Parameters_Cell_SYNC(PARAMETERS_CB_T *moudule, unsigned short index,
     // Address out of bounds checking
     if ((index + 1) * sizeof(PARAMETERS_CELL_T) > moudule->block_size)
     {
-        printf("Parameters 0X%d index out!error!\n", moudule);
+        printf("Parameters 0X%x index out!error!\n", (uintptr_t)moudule);
         status = false;
     }
     else
@@ -71,7 +72,7 @@ static bool Parameters_Cell_SYNC(PARAMETERS_CB_T *moudule, unsigned short index,
         }
         if (max_retry == 0)
         {
-            printf("Parameters 0X%d SYNC cell:%d failed! type %d\n", moudule, index, operate);
+            printf("Parameters 0X%x SYNC cell:%d failed! type %d\n", (uintptr_t)moudule, index, operate);
             status = false;
         }
     }
@@ -119,9 +120,10 @@ static bool Parameters_Info_SYNC(PARAMETERS_CB_T *moudule, unsigned char operate
     }
     if (max_retry == 0)
     {
-        printf("Parameters 0X%d SYNC info failed! type :%d\n", moudule, operate);
+        printf("Parameters 0X%x SYNC info failed! type :%d\n", (uintptr_t)moudule, operate);
         status = false;
     }
+    return status;
 }
 
 /**
@@ -264,10 +266,10 @@ bool Parameters_Init(PARAMETERS_CB_T *moudule, char *table_tag, unsigned char *R
     if (status)
     {
         // checkout
-        if (!moudule->checkout(moudule->block_start, index * sizeof(PARAMETERS_CELL_T)) ==
-            moudule->table_info.check_value)
+        if (!(moudule->checkout(moudule->block_start, index * sizeof(PARAMETERS_CELL_T)) ==
+            moudule->table_info.check_value))
         {
-            printf("Parameters 0X%d checkout error!\n", moudule);
+            printf("Parameters 0X%x checkout error!\n", (uintptr_t)moudule);
             status = false;
         }
     }
@@ -315,7 +317,7 @@ void *Parameters_Creat(PARAMETERS_CB_T *moudule, char *name, PARAMETERS_TYPE_T t
     }
     else
     {
-        printf("Parameters 0X%d without space\n",moudule);
+        printf("Parameters 0X%x without space\n",(uintptr_t)moudule);
     }
 
     return ret;
