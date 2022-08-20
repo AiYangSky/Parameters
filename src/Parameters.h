@@ -3,7 +3,7 @@
  * @Author         : Aiyangsky
  * @Date           : 2022-08-08 12:03:31
  * @LastEditors    : Aiyangsky
- * @LastEditTime   : 2022-08-20 22:54:43
+ * @LastEditTime   : 2022-08-21 00:28:29
  * @FilePath       : \SparrowSkyFlightControl\SRC\moduldes\Parameters\src\Parameters.h
  */
 
@@ -18,6 +18,9 @@ extern "C"
 #endif //__cplusplus
 
 #define EMPTY_BYTE '\0'
+
+#define ATOMIC_LOCK()
+#define ATOMIC_UNLOCK()
 
     typedef enum
     {
@@ -37,7 +40,7 @@ extern "C"
     typedef struct
     {
         char table_tag[16];
-        unsigned short used_index;
+        unsigned short used_number;
         unsigned short check_value;
     } PARAMETERS_TABLE_INFO_T;
 #pragma pack()
@@ -89,9 +92,11 @@ extern "C"
                          unsigned short (*checkout)(unsigned char *, unsigned int));
 
     void *Parameters_Creat(PARAMETERS_CB_T *moudule, char *name, PARAMETERS_TYPE_T type, void *default_value);
-    void *Parameters_Chanege(PARAMETERS_CB_T *moudule, char *name, void *value);
+    void *Parameters_Chanege(PARAMETERS_CB_T *moudule, char *name, PARAMETERS_TYPE_T type, void *value);
     bool Parameters_Del(PARAMETERS_CB_T *moudule, char *name);
-    unsigned char Parameters_Get_name(PARAMETERS_CB_T *moudule, unsigned short index, char *name, void *value);
+    unsigned char Parameters_Get_by_index(PARAMETERS_CB_T *moudule, unsigned short index, char *name, void *value);
+    unsigned char Parameters_Get_by_name(PARAMETERS_CB_T *moudule, char *name, unsigned short *index, void *value);
+
 #ifdef __cplusplus
 }
 #endif //__cplusplus

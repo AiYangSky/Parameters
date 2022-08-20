@@ -3,7 +3,7 @@
  * @Author         : Aiyangsky
  * @Date           : 2022-08-08 12:10:45
  * @LastEditors    : Aiyangsky
- * @LastEditTime   : 2022-08-20 22:54:12
+ * @LastEditTime   : 2022-08-21 00:28:44
  * @FilePath       : \SparrowSkyFlightControl\SRC\moduldes\Parameters\src\Parameters.c
  */
 
@@ -168,6 +168,8 @@ static bool Parameters_Search(PARAMETERS_CB_T *moudule, char *name, unsigned sho
  */
 static bool Parameters_Load_value(void *dst, void *src, PARAMETERS_TYPE_T type)
 {
+    ATOMIC_LOCK();
+
     bool status = true;
     switch (type)
     {
@@ -188,7 +190,7 @@ static bool Parameters_Load_value(void *dst, void *src, PARAMETERS_TYPE_T type)
     case PARAMETERS_TYPE_INT64:
     case PARAMETERS_TYPE_F64:
         printf("don't support");
-        //memcpy(dst, src, 8);
+        // memcpy(dst, src, 8);
         break;
 
     default:
@@ -196,6 +198,7 @@ static bool Parameters_Load_value(void *dst, void *src, PARAMETERS_TYPE_T type)
         break;
     }
 
+    ATOMIC_UNLOCK();
     return status;
 }
 
@@ -240,7 +243,7 @@ bool Parameters_Init(PARAMETERS_CB_T *moudule, char *table_tag, unsigned char *R
             // This is a whole new memory area that needs to write new information
             memset(moudule->table_info.table_tag, EMPTY_BYTE, 16);
             strcpy(moudule->table_info.table_tag, table_tag);
-            moudule->table_info.used_index = 0;
+            moudule->table_info.used_number = 0;
             moudule->table_info.check_value = moudule->checkout(moudule->block_start, 0);
 
             status = Parameters_Info_SYNC(moudule, 1, 4);
@@ -250,7 +253,7 @@ bool Parameters_Init(PARAMETERS_CB_T *moudule, char *table_tag, unsigned char *R
     if (status)
     {
         // load ROM to RAM
-        while (index < moudule->table_info.used_index)
+        while (index < moudule->table_info.used_number)
         {
             status = Parameters_Cell_SYNC(moudule, index, 2, 4);
             if (status)
@@ -308,8 +311,8 @@ void *Parameters_Creat(PARAMETERS_CB_T *moudule, char *name, PARAMETERS_TYPE_T t
             }
             else
             {
-                moudule->table_info.used_index++;
-                moudule->table_info.check_value = moudule->checkout(moudule->block_start, moudule->table_info.used_index * sizeof(PARAMETERS_CELL_T));
+                moudule->table_info.used_number++;
+                moudule->table_info.check_value = moudule->checkout(moudule->block_start, moudule->table_info.used_number * sizeof(PARAMETERS_CELL_T));
 
                 Parameters_Cell_SYNC(moudule, index, 1, 4);
                 Parameters_Info_SYNC(moudule, 1, 4);
@@ -332,7 +335,7 @@ void *Parameters_Creat(PARAMETERS_CB_T *moudule, char *name, PARAMETERS_TYPE_T t
  * @return      {*}                             Address of value.
  * @note       :                                If the corresponding identifier is not found, NULL is returned.
  */
-void *Parameters_Chanege(PARAMETERS_CB_T *moudule, char *name, void *value)
+void *Parameters_Chanege(PARAMETERS_CB_T *moudule, char *name,PARAMETERS_TYPE_T type, void *value)
 {
     PARAMETERS_CELL_T *cell = NULL;
     void *ret = NULL;
@@ -340,7 +343,13 @@ void *Parameters_Chanege(PARAMETERS_CB_T *moudule, char *name, void *value)
 
     if (Parameters_Search(moudule, name, &index))
     {
+        
         cell = (PARAMETERS_CELL_T *)(moudule->block_start + index * sizeof(PARAMETERS_CELL_T));
+        if(cell->type != type)
+        {
+            return ret;
+        }
+
         if (cell->name[0] != EMPTY_BYTE)
         {
             ret = cell->data;
@@ -350,7 +359,7 @@ void *Parameters_Chanege(PARAMETERS_CB_T *moudule, char *name, void *value)
             }
             else
             {
-                moudule->table_info.check_value = moudule->checkout(moudule->block_start, moudule->table_info.used_index * sizeof(PARAMETERS_CELL_T));
+                moudule->table_info.check_value = moudule->checkout(moudule->block_start, moudule->table_info.used_number * sizeof(PARAMETERS_CELL_T));
 
                 Parameters_Cell_SYNC(moudule, index, 1, 4);
                 Parameters_Info_SYNC(moudule, 1, 4);
@@ -382,7 +391,7 @@ bool Parameters_Del(PARAMETERS_CB_T *moudule, char *name)
         {
             temp_index = index;
             memset(cell, EMPTY_BYTE, sizeof(PARAMETERS_CELL_T));
-            while (temp_index < moudule->table_info.used_index)
+            while (temp_index < moudule->table_info.used_number)
             {
                 memcpy(cell, (void *)(cell + 1), sizeof(PARAMETERS_CELL_T));
                 temp_index++;
@@ -390,10 +399,10 @@ bool Parameters_Del(PARAMETERS_CB_T *moudule, char *name)
             }
             memset(cell, EMPTY_BYTE, sizeof(PARAMETERS_CELL_T));
 
-            moudule->table_info.used_index--;
-            moudule->table_info.check_value = moudule->checkout(moudule->block_start, moudule->table_info.used_index * sizeof(PARAMETERS_CELL_T));
+            moudule->table_info.used_number--;
+            moudule->table_info.check_value = moudule->checkout(moudule->block_start, moudule->table_info.used_number * sizeof(PARAMETERS_CELL_T));
 
-            while (index <= moudule->table_info.used_index)
+            while (index <= moudule->table_info.used_number)
             {
                 Parameters_Cell_SYNC(moudule, index, 1, 4);
                 index++;
@@ -410,13 +419,19 @@ bool Parameters_Del(PARAMETERS_CB_T *moudule, char *name)
  * @param       {PARAMETERS_CB_T} *moudule      Pointer to the parameter management modules
  * @param       {unsigned short} index          index
  * @param       {char} *name                    identifier of the parameter
+ * @param       {void} *value                   value of parameter
  * @return      {*}
  * @note       :
  */
-unsigned char Parameters_Get_name(PARAMETERS_CB_T *moudule, unsigned short index, char *name, void *value)
+unsigned char Parameters_Get_by_index(PARAMETERS_CB_T *moudule, unsigned short index, char *name, void *value)
 {
     PARAMETERS_CELL_T *cell = NULL;
     unsigned char type = 0;
+
+    if (index > moudule->table_info.used_number)
+    {
+        return type;
+    }
 
     cell = (PARAMETERS_CELL_T *)(moudule->block_start + index * sizeof(PARAMETERS_CELL_T));
 
@@ -424,7 +439,30 @@ unsigned char Parameters_Get_name(PARAMETERS_CB_T *moudule, unsigned short index
     {
         memcpy(name, cell->name, 16);
         type = cell->type;
-        value = cell->data;
+        Parameters_Load_value(value, cell->data, cell->type);
+    }
+    return type;
+}
+
+/**
+ * @description:                                Get the index of the parameter based on the identifier
+ * @param       {PARAMETERS_CB_T} *moudule      Pointer to the parameter management modules
+ * @param       {char} *name                    identifier of the parameter
+ * @param       {unsigned short} *index         index
+ * @param       {void} *value                   value of parameter
+ * @return      {*}
+ * @note       :
+ */
+unsigned char Parameters_Get_by_name(PARAMETERS_CB_T *moudule, char *name, unsigned short *index, void *value)
+{
+    PARAMETERS_CELL_T *cell = NULL;
+    unsigned char type = 0;
+
+    if (Parameters_Search(moudule, name, index))
+    {
+        cell = (PARAMETERS_CELL_T *)(moudule->block_start + (*index) * sizeof(PARAMETERS_CELL_T));
+        type = cell->type;
+        Parameters_Load_value(value, cell->data, cell->type);
     }
     return type;
 }
