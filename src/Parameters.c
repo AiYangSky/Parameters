@@ -3,7 +3,7 @@
  * @Author         : Aiyangsky
  * @Date           : 2022-08-08 12:10:45
  * @LastEditors    : Aiyangsky
- * @LastEditTime   : 2022-08-11 13:21:38
+ * @LastEditTime   : 2022-08-20 22:54:12
  * @FilePath       : \SparrowSkyFlightControl\SRC\moduldes\Parameters\src\Parameters.c
  */
 
@@ -18,7 +18,7 @@ typedef struct
 {
     char name[16];
     unsigned char type;
-    unsigned char data[8];
+    unsigned char data[4];
 } PARAMETERS_CELL_T;
 #pragma pack()
 
@@ -187,7 +187,8 @@ static bool Parameters_Load_value(void *dst, void *src, PARAMETERS_TYPE_T type)
     case PARAMETERS_TYPE_UINT64:
     case PARAMETERS_TYPE_INT64:
     case PARAMETERS_TYPE_F64:
-        memcpy(dst, src, 8);
+        printf("don't support");
+        //memcpy(dst, src, 8);
         break;
 
     default:
@@ -237,7 +238,7 @@ bool Parameters_Init(PARAMETERS_CB_T *moudule, char *table_tag, unsigned char *R
         if (!strcmp(moudule->table_info.table_tag, table_tag) == 0)
         {
             // This is a whole new memory area that needs to write new information
-            memset(moudule->table_info.table_tag, '\0', 16);
+            memset(moudule->table_info.table_tag, EMPTY_BYTE, 16);
             strcpy(moudule->table_info.table_tag, table_tag);
             moudule->table_info.used_index = 0;
             moudule->table_info.check_value = moudule->checkout(moudule->block_start, 0);
@@ -412,11 +413,18 @@ bool Parameters_Del(PARAMETERS_CB_T *moudule, char *name)
  * @return      {*}
  * @note       :
  */
-void Parameters_Get_name(PARAMETERS_CB_T *moudule, unsigned short index, char *name)
+unsigned char Parameters_Get_name(PARAMETERS_CB_T *moudule, unsigned short index, char *name, void *value)
 {
     PARAMETERS_CELL_T *cell = NULL;
+    unsigned char type = 0;
 
     cell = (PARAMETERS_CELL_T *)(moudule->block_start + index * sizeof(PARAMETERS_CELL_T));
 
-    strcpy(name, cell->name);
+    if (cell->name[0] != EMPTY_BYTE)
+    {
+        memcpy(name, cell->name, 16);
+        type = cell->type;
+        value = cell->data;
+    }
+    return type;
 }

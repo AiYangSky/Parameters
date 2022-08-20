@@ -3,7 +3,7 @@
  * @Author         : Aiyangsky
  * @Date           : 2022-08-08 12:03:31
  * @LastEditors    : Aiyangsky
- * @LastEditTime   : 2022-08-11 13:24:51
+ * @LastEditTime   : 2022-08-20 22:54:43
  * @FilePath       : \SparrowSkyFlightControl\SRC\moduldes\Parameters\src\Parameters.h
  */
 
@@ -17,7 +17,7 @@ extern "C"
 {
 #endif //__cplusplus
 
-#define EMPTY_BYTE 0X00
+#define EMPTY_BYTE '\0'
 
     typedef enum
     {
@@ -91,7 +91,7 @@ extern "C"
     void *Parameters_Creat(PARAMETERS_CB_T *moudule, char *name, PARAMETERS_TYPE_T type, void *default_value);
     void *Parameters_Chanege(PARAMETERS_CB_T *moudule, char *name, void *value);
     bool Parameters_Del(PARAMETERS_CB_T *moudule, char *name);
-    void Parameters_Get_name(PARAMETERS_CB_T *moudule, unsigned short index, char *name);
+    unsigned char Parameters_Get_name(PARAMETERS_CB_T *moudule, unsigned short index, char *name, void *value);
 #ifdef __cplusplus
 }
 #endif //__cplusplus
