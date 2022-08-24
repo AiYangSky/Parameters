@@ -3,8 +3,8 @@
  * @Author         : Aiyangsky
  * @Date           : 2022-08-08 12:10:45
  * @LastEditors    : Aiyangsky
- * @LastEditTime   : 2022-08-21 00:28:44
- * @FilePath       : \SparrowSkyFlightControl\SRC\moduldes\Parameters\src\Parameters.c
+ * @LastEditTime   : 2022-08-24 15:39:35
+ * @FilePath       : \Parameters\src\Parameters.c
  */
 
 #include "Parameters.h"
@@ -168,7 +168,7 @@ static bool Parameters_Search(PARAMETERS_CB_T *moudule, char *name, unsigned sho
  */
 static bool Parameters_Load_value(void *dst, void *src, PARAMETERS_TYPE_T type)
 {
-    ATOMIC_LOCK();
+    ISR_LOCK();
 
     bool status = true;
     switch (type)
@@ -191,14 +191,14 @@ static bool Parameters_Load_value(void *dst, void *src, PARAMETERS_TYPE_T type)
     case PARAMETERS_TYPE_F64:
         printf("don't support");
         // memcpy(dst, src, 8);
-        break;
+        // break;
 
     default:
         status = false;
         break;
     }
 
-    ATOMIC_UNLOCK();
+    ISR_UNLOCK();
     return status;
 }
 
@@ -296,6 +296,9 @@ void *Parameters_Creat(PARAMETERS_CB_T *moudule, char *name, PARAMETERS_TYPE_T t
     PARAMETERS_CELL_T *cell = NULL;
     void *ret = NULL;
     unsigned short index;
+
+    OS_LOCK();
+
     if (Parameters_Search(moudule, name, &index))
     {
         cell = (PARAMETERS_CELL_T *)(moudule->block_start + index * sizeof(PARAMETERS_CELL_T));
@@ -324,6 +327,7 @@ void *Parameters_Creat(PARAMETERS_CB_T *moudule, char *name, PARAMETERS_TYPE_T t
         printf("Parameters 0X%x without space\n", (uintptr_t)moudule);
     }
 
+    OS_UNLOCK();
     return ret;
 }
 
@@ -335,7 +339,7 @@ void *Parameters_Creat(PARAMETERS_CB_T *moudule, char *name, PARAMETERS_TYPE_T t
  * @return      {*}                             Address of value.
  * @note       :                                If the corresponding identifier is not found, NULL is returned.
  */
-void *Parameters_Chanege(PARAMETERS_CB_T *moudule, char *name,PARAMETERS_TYPE_T type, void *value)
+void *Parameters_Chanege(PARAMETERS_CB_T *moudule, char *name, PARAMETERS_TYPE_T type, void *value)
 {
     PARAMETERS_CELL_T *cell = NULL;
     void *ret = NULL;
@@ -343,9 +347,9 @@ void *Parameters_Chanege(PARAMETERS_CB_T *moudule, char *name,PARAMETERS_TYPE_T 
 
     if (Parameters_Search(moudule, name, &index))
     {
-        
+
         cell = (PARAMETERS_CELL_T *)(moudule->block_start + index * sizeof(PARAMETERS_CELL_T));
-        if(cell->type != type)
+        if (cell->type != type)
         {
             return ret;
         }
@@ -384,6 +388,8 @@ bool Parameters_Del(PARAMETERS_CB_T *moudule, char *name)
     unsigned short index;
     unsigned short temp_index;
 
+    OS_LOCK();
+
     if (Parameters_Search(moudule, name, &index))
     {
         cell = (PARAMETERS_CELL_T *)(moudule->block_start + index * sizeof(PARAMETERS_CELL_T));
@@ -411,6 +417,9 @@ bool Parameters_Del(PARAMETERS_CB_T *moudule, char *name)
             status = true;
         }
     }
+
+    OS_UNLOCK();
+
     return status;
 }
 

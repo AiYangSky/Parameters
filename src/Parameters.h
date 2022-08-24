@@ -3,8 +3,8 @@
  * @Author         : Aiyangsky
  * @Date           : 2022-08-08 12:03:31
  * @LastEditors    : Aiyangsky
- * @LastEditTime   : 2022-08-21 00:28:29
- * @FilePath       : \SparrowSkyFlightControl\SRC\moduldes\Parameters\src\Parameters.h
+ * @LastEditTime   : 2022-08-24 15:37:54
+ * @FilePath       : \Parameters\src\Parameters.h
  */
 
 #ifndef _PARAMETERS_H
@@ -19,8 +19,13 @@ extern "C"
 
 #define EMPTY_BYTE '\0'
 
-#define ATOMIC_LOCK()
-#define ATOMIC_UNLOCK()
+#define ISR_LOCK()
+#define ISR_UNLOCK()
+
+#define OS_LOCK()
+#define OS_UNLOCK()
+
+
 
     typedef enum
     {
